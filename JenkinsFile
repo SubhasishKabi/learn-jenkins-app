@@ -34,7 +34,7 @@ pipeline{
               test -f build/index.html
               echo "index.html exists"
 
-              npm test -- --watchAll=false
+              npm test
           '''
       }
 }
@@ -42,6 +42,11 @@ pipeline{
       steps{
         echo 'Deploying...'
       }
+    }
+  }
+  post{
+    always{
+      junit 'test-results/junit.xml'
     }
   }
 }
