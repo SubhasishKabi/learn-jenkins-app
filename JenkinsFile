@@ -46,6 +46,7 @@ pipeline {
 
                     echo "Checking JUnit report..."
                     ls -la test-results
+                    find . -name "junit.xml" -type f
                 '''
             }
         }
