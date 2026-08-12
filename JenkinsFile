@@ -20,23 +20,45 @@ pipeline{
         '''
       }
     }
+//     stage('Test') {
+//       agent {
+//           docker {
+//               image 'node:18-alpine'
+//           }
+//       }
+
+//       steps {
+//           echo 'Testing...'
+
+//           sh '''
+//               test -f build/index.html
+//               echo "index.html exists"
+
+//               npm test
+//           '''
+//       }
+// }
     stage('Test') {
-      agent {
-          docker {
-              image 'node:18-alpine'
-          }
-      }
+    agent {
+        docker {
+            image 'node:18-alpine'
+        }
+    }
 
-      steps {
-          echo 'Testing...'
+    steps {
+        echo 'Testing...'
 
-          sh '''
-              test -f build/index.html
-              echo "index.html exists"
+        sh '''
+            test -f build/index.html
+            echo "index.html exists"
 
-              npm test
-          '''
-      }
+            npm test -- --watchAll=false
+
+            echo "Checking JUnit report..."
+            ls -la test-results
+            find . -name "junit.xml" -type f
+        '''
+    }
 }
     stage('Deploy'){
       steps{
