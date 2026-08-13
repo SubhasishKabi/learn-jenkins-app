@@ -66,16 +66,25 @@ pipeline {
                 //     npx playwright test --reporter=html
                 // '''
                 sh '''
+                    echo "===== BEFORE npm install ====="
+                    find . -name junit.xml -type f
+
                     npm install serve
+
+                    echo "===== AFTER npm install ====="
+                    find . -name junit.xml -type f
+
                     node_modules/.bin/serve -s build &
+
+                    echo "===== AFTER serve ====="
+                    find . -name junit.xml -type f
+
                     sleep 10
+
                     npx playwright test --reporter=html
 
-                    echo "===== AFTER E2E ====="
-                    pwd
-                    ls -la
-                    ls -la test-results || true
-                    find . -name "junit.xml" -type f
+                    echo "===== AFTER Playwright ====="
+                    find . -name junit.xml -type f
                 '''
             }
         }
