@@ -3,29 +3,29 @@ pipeline {
 
     stages {
 
-        stage('Build') {
-            agent {
-                docker {
-                    image 'node:18-alpine'
-                    reuseNode true
-                }
-            }
+        // stage('Build') {
+        //     agent {
+        //         docker {
+        //             image 'node:18-alpine'
+        //             reuseNode true
+        //         }
+        //     }
 
-            steps {
-                echo 'Building...'
+        //     steps {
+        //         echo 'Building...'
 
-                sh '''
-                    ls -la
-                    node --version
-                    npm --version
+        //         sh '''
+        //             ls -la
+        //             node --version
+        //             npm --version
 
-                    npm ci
-                    npm run build
+        //             npm ci
+        //             npm run build
 
-                    ls -la
-                '''
-            }
-        }
+        //             ls -la
+        //         '''
+        //     }
+        // }
 
         stage('Test') {
             agent {
