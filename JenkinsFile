@@ -43,6 +43,9 @@ pipeline {
                     echo "index.html exists"
 
                     npm test
+                     echo "===== AFTER TEST ====="
+                     ls -la test-results
+                     find . -name "junit.xml" -type f
                 '''
             }
         }
