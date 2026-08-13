@@ -56,11 +56,23 @@ pipeline {
             }
 
             steps {
+                // sh '''
+                //     npm install serve
+                //     node_modules/.bin/serve -s build &
+                //     sleep 10
+                //     npx playwright test --reporter=html
+                // '''
                 sh '''
                     npm install serve
                     node_modules/.bin/serve -s build &
                     sleep 10
                     npx playwright test --reporter=html
+
+                    echo "===== AFTER E2E ====="
+                    pwd
+                    ls -la
+                    ls -la test-results || true
+                    find . -name "junit.xml" -type f
                 '''
             }
         }
