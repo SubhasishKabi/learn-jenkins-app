@@ -59,32 +59,11 @@ pipeline {
             }
 
             steps {
-                // sh '''
-                //     npm install serve
-                //     node_modules/.bin/serve -s build &
-                //     sleep 10
-                //     npx playwright test --reporter=html
-                // '''
                 sh '''
-                    echo "===== BEFORE npm install ====="
-                    find . -name junit.xml -type f
-
                     npm install serve
-
-                    echo "===== AFTER npm install ====="
-                    find . -name junit.xml -type f
-
                     node_modules/.bin/serve -s build &
-
-                    echo "===== AFTER serve ====="
-                    find . -name junit.xml -type f
-
                     sleep 10
-
                     npx playwright test --reporter=html
-
-                    echo "===== AFTER Playwright ====="
-                    find . -name junit.xml -type f
                 '''
             }
         }
@@ -92,7 +71,7 @@ pipeline {
 
     post {
         always {
-            junit 'test-results/junit.xml'
+            junit 'jest-results/junit.xml'
         }
     }
 }
