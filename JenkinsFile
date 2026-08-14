@@ -116,38 +116,38 @@ pipeline {
                     node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
                     node -e "console.log(require('./deploy-output.json').deploy_url)"
                     '''
-                script{
-                    env.CI_ENVIRONMENT_URL = sh(script: "node -e \"console.log(require('./deploy-output.json').deploy_url)\"", returnStdout: true).trim()
-                }
+                // script{
+                //     env.CI_ENVIRONMENT_URL = sh(script: "node -e \"console.log(require('./deploy-output.json').deploy_url)\"", returnStdout: true).trim()
+                // }
             }
 
             
         }
 
-        stage('StagingE2E') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                }
-            }
+        // stage('StagingE2E') {
+        //     agent {
+        //         docker {
+        //             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+        //             reuseNode true
+        //         }
+        //     }
 
-            environment {
-                CI_ENVIRONMENT_URL = '${env.CI_ENVIRONMENT_URL}'
-            }
+        //     environment {
+        //         CI_ENVIRONMENT_URL = '${env.CI_ENVIRONMENT_URL}'
+        //     }
 
-            steps {
-                sh '''
-                    npx playwright test  --reporter=html
-                '''
-            }
+        //     steps {
+        //         sh '''
+        //             npx playwright test  --reporter=html
+        //         '''
+        //     }
 
-            post {
-                always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'staging E2E', reportTitles: '', useWrapperFileDirectly: true])
-                }
-            }
-        }
+        //     post {
+        //         always {
+        //             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'staging E2E', reportTitles: '', useWrapperFileDirectly: true])
+        //         }
+        //     }
+        // }
 
         
         stage('Approval') {
