@@ -109,14 +109,12 @@ pipeline {
             }
             steps {
                 sh '''
-                    apk add --no-cache jq
-                    export NODE_JQ_SKIP_INSTALL_BINARY=true
-                    npm install netlify-cli node-jq
+                    npm install netlify-cli 
                     node_modules/.bin/netlify --version
                     echo "Deploying to Netlify... Site ID: $NETLIFY_SITE_ID"
                     node_modules/.bin/netlify status
                     node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
-                    node_modules/.bin/node-jq -r '.deploy_url' deploy-output.json
+                    node -e "console.log(require('./deploy-output.json').deploy_url)"
                     '''
             }
         }
