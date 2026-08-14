@@ -9,6 +9,12 @@ pipeline {
 
     stages {
 
+        stage('Docker') {
+            steps {
+                sh 'docker build -t my-playwright .'
+            }
+        }
+
         stage('Build') {
             agent {
                 docker {
@@ -101,6 +107,37 @@ pipeline {
                 }
             }
         }
+
+
+        stage('Deploy staging') {
+            agent {
+                docker {
+                    image 'my-playwright'
+                    reuseNode true
+                }
+            }
+
+            environment {
+                CI_ENVIRONMENT_URL = 'STAGING_URL_TO_BE_SET'
+            }
+
+            steps {
+                sh '''
+                    netlify --version
+                    echo "Deploying to staging. Site ID: $NETLIFY_SITE_ID"
+                    netlify status
+                    netlify deploy --dir=build --json > deploy-output.json
+                    CI_ENVIRONMENT_URL=$(node-jq -r '.deploy_url' deploy-output.json)
+                    npx playwright test  --reporter=html
+                '''
+            }
+
+            post {
+                always {
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Staging E2E', reportTitles: '', useWrapperFileDirectly: true])
+                }
+            }
+        }
         // stage('Deploy Staging') {
         //     agent {
         //         docker {
@@ -150,36 +187,36 @@ pipeline {
         //     }
         // }
 
-        stage('Staging Deploy and E2E') {
-            agent {
-                docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
-                    reuseNode true
-                }
-            }
+        // stage('Staging Deploy and E2E') {
+        //     agent {
+        //         docker {
+        //             image 'mcr.microsoft.com/playwright:v1.39.0-jammy'
+        //             reuseNode true
+        //         }
+        //     }
 
-            environment {
-                CI_ENVIRONMENT_URL = 'TO_BE_SET'
-            }
+        //     environment {
+        //         CI_ENVIRONMENT_URL = 'TO_BE_SET'
+        //     }
 
-            steps {
-                sh '''
-                    npm install netlify-cli@20.1.1 
-                    node_modules/.bin/netlify --version
-                    echo "Deploying to Netlify... Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
-                    CI_ENVIRONMENT_URL=$(node -e "console.log(require('./deploy-output.json').deploy_url)")
-                    npx playwright test  --reporter=html
-                '''
-            }
+        //     steps {
+        //         sh '''
+        //             npm install netlify-cli@20.1.1 
+        //             node_modules/.bin/netlify --version
+        //             echo "Deploying to Netlify... Site ID: $NETLIFY_SITE_ID"
+        //             node_modules/.bin/netlify status
+        //             node_modules/.bin/netlify deploy --dir=build --no-build --json > deploy-output.json
+        //             CI_ENVIRONMENT_URL=$(node -e "console.log(require('./deploy-output.json').deploy_url)")
+        //             npx playwright test  --reporter=html
+        //         '''
+        //     }
 
-            post {
-                always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'staging E2E', reportTitles: '', useWrapperFileDirectly: true])
-                }
-            }
-        }
+        //     post {
+        //         always {
+        //             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'staging E2E', reportTitles: '', useWrapperFileDirectly: true])
+        //         }
+        //     }
+        // }
 
         
         stage('Approval') {
@@ -189,11 +226,10 @@ pipeline {
             }
         }
 
-
-        stage('Prod Deploy and E2E') {
+        stage('Deploy prod and E2E') {
             agent {
                 docker {
-                    image 'mcr.microsoft.com/playwright:v1.39.0-noble'
+                    image 'my-playwright'
                     reuseNode true
                 }
             }
@@ -204,21 +240,51 @@ pipeline {
 
             steps {
                 sh '''
-                    npm install netlify-cli@20.1.1
-                    node_modules/.bin/netlify --version
-                    echo "Deploying to Netlify... Site ID: $NETLIFY_SITE_ID"
-                    node_modules/.bin/netlify status
-                    node_modules/.bin/netlify deploy --dir=build --prod --no-build 
+                    node --version
+                    netlify --version
+                    echo "Deploying to production. Site ID: $NETLIFY_SITE_ID"
+                    netlify status
+                    netlify deploy --dir=build --prod
                     npx playwright test  --reporter=html
                 '''
             }
 
             post {
                 always {
-                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+                    publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Prod E2E', reportTitles: '', useWrapperFileDirectly: true])
                 }
             }
         }
+        //some error
+        // stage('Prod Deploy and E2E') {
+        //     agent {
+        //         docker {
+        //             image 'mcr.microsoft.com/playwright:v1.39.0-noble'
+        //             reuseNode true
+        //         }
+        //     }
+
+        //     environment {
+        //         CI_ENVIRONMENT_URL = 'https://hilarious-queijadas-a71365.netlify.app/'
+        //     }
+
+        //     steps {
+        //         sh '''
+        //             npm install netlify-cli@20.1.1
+        //             node_modules/.bin/netlify --version
+        //             echo "Deploying to Netlify... Site ID: $NETLIFY_SITE_ID"
+        //             node_modules/.bin/netlify status
+        //             node_modules/.bin/netlify deploy --dir=build --prod --no-build 
+        //             npx playwright test  --reporter=html
+        //         '''
+        //     }
+
+        //     post {
+        //         always {
+        //             publishHTML([allowMissing: false, alwaysLinkToLastBuild: false, keepAll: false, reportDir: 'playwright-report', reportFiles: 'index.html', reportName: 'Playwright E2E', reportTitles: '', useWrapperFileDirectly: true])
+        //         }
+        //     }
+        // }
         // stage('Deploy Prod') {
         //     agent {
         //         docker {
