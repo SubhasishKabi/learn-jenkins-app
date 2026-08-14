@@ -117,7 +117,7 @@ pipeline {
                     node -e "console.log(require('./deploy-output.json').deploy_url)"
                     '''
                 script{
-                    env.CI_ENVIRONMENT_URL = sh(script: "node -e \"console.log(require('./deploy-output.json').deploy_url)\"", returnStdout: true).trim()
+                    env.CI_STAGING_URL = sh(script: "node -e \"console.log(require('./deploy-output.json').deploy_url)\"", returnStdout: true).trim()
                 }
             }
 
@@ -133,7 +133,7 @@ pipeline {
             }
 
             environment {
-                CI_ENVIRONMENT_URL = '${env.CI_ENVIRONMENT_URL}'
+                CI_ENVIRONMENT_URL = '${env.CI_STAGING_URL}'
             }
 
             steps {
